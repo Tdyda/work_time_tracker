@@ -25,9 +25,16 @@ class Employee
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    /**
+     * @var Collection<int, WorkTimeEntry>
+     */
+    #[ORM\OneToMany(targetEntity: WorkTimeEntry::class, mappedBy: 'Employee')]
+    private Collection $workTimeEntries;
+
     public function __construct()
     {
         $this->id = Uuid::uuid4();
+        $this->workTimeEntries = new ArrayCollection();
     }
 
     public function getUuid(): ?string
@@ -74,6 +81,36 @@ class Employee
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WorkTimeEntry>
+     */
+    public function getWorkTimeEntries(): Collection
+    {
+        return $this->workTimeEntries;
+    }
+
+    public function addWorkTimeEntry(WorkTimeEntry $workTimeEntry): static
+    {
+        if (!$this->workTimeEntries->contains($workTimeEntry)) {
+            $this->workTimeEntries->add($workTimeEntry);
+            $workTimeEntry->setEmployee($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWorkTimeEntry(WorkTimeEntry $workTimeEntry): static
+    {
+        if ($this->workTimeEntries->removeElement($workTimeEntry)) {
+            // set the owning side to null (unless already changed)
+            if ($workTimeEntry->getEmployee() === $this) {
+                $workTimeEntry->setEmployee(null);
+            }
+        }
 
         return $this;
     }
