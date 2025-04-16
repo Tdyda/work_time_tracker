@@ -70,6 +70,7 @@
 /.env.test
 /.env.prod
 /.env.*.local
+/.DS_Store
 
 /coverage
 
