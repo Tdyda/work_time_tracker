@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\DTO\WorkTime\WorkTimeEntryRequest;
+use App\DTO\WorkTime\WorkTimeSummaryRequest;
 use App\Service\WorkTime\WorkTimeService;
 use App\Service\WorkTime\WorkTimeSummaryService;
 use LogicException;
@@ -33,6 +34,32 @@ final class WorkTimeEntryController extends AbstractController
             $workTimeService->register($dto);
             return $this->json(['message' => 'Czas pracy został dodany!']);
         } catch (\LogicException $e) {
+            return $this->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    #[Route('/summary', name: 'work_time_summary', methods: ['GET'])]
+    public function summary(
+        Request $request,
+        SerializerInterface $serializer,
+        ValidatorInterface $validator,
+        WorkTimeSummaryService $summaryService,
+    ): JsonResponse {
+        try {
+            $dto = $serializer->deserialize(json_encode($request->query->all()), WorkTimeSummaryRequest::class, 'json');
+        } catch (\Throwable $e) {
+            return $this->json(['error' => 'Invalid input format: ' . $e->getMessage()], 400);
+        }
+
+        $errors = $validator->validate($dto);
+        if (count($errors) > 0) {
+            return $this->json(['errors' => (string)$errors], 400);
+        }
+
+        try {
+            $result = $summaryService->calculateSummary($dto);
+            return $this->json(['response' => $result]);
+        } catch (LogicException $e) {
             return $this->json(['error' => $e->getMessage()], 400);
         }
     }
