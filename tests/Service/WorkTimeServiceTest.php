@@ -38,4 +38,25 @@ class WorkTimeServiceTest extends TestCase
 
         $this->assertTrue(true);
     }
+
+    public function testThrowsExceptionWhenEmployeeNotFound(): void
+    {
+        $dto = new WorkTimeEntryRequest();
+        $dto->employee_uuid = 'non-existent-uuid';
+        $dto->start_time = '2025-04-20 08:00';
+        $dto->end_time = '2025-04-20 14:00';
+
+        $employeeRepo = $this->createMock(EmployeeRepository::class);
+        $employeeRepo->method('find')->willReturn(null);
+
+        $entryRepo = $this->createMock(WorkTimeEntryRepository::class);
+        $em = $this->createMock(EntityManagerInterface::class);
+
+        $service = new WorkTimeService($employeeRepo, $entryRepo, $em);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Employee not found.');
+
+        $service->register($dto);
+    }
 }
