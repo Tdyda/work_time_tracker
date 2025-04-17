@@ -29,6 +29,9 @@ class WorkTimeEntryRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * @return WorkTimeEntry[]
+     */
     public function findByEmployeeAndDateRange(
         Employee $employee,
         \DateTimeInterface $start,
