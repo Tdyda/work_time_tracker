@@ -16,4 +16,16 @@ class WorkTimeEntryRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, WorkTimeEntry::class);
     }
+
+    public function existsForEmployeeAndDay(Employee $employee, \DateTimeInterface $startDay): bool
+    {
+        return (bool)$this->createQueryBuilder('w')
+            ->select('1')
+            ->andWhere('w.employee = :employee')
+            ->andWhere('w.startDay = :day')
+            ->setParameter('employee', $employee)
+            ->setParameter('day', $startDay->format('Y-m-d'))
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
