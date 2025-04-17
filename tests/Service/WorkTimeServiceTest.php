@@ -59,4 +59,50 @@ class WorkTimeServiceTest extends TestCase
 
         $service->register($dto);
     }
+
+    public function testThrowsExceptionWhenEndTimeIsBeforeStartTime(): void
+    {
+        $dto = new WorkTimeEntryRequest();
+        $dto->employee_uuid = 'uuid-123';
+        $dto->start_time = '2025-04-20 14:00';
+        $dto->end_time = '2025-04-20 08:00';
+
+        $employee = $this->createMock(Employee::class);
+
+        $employeeRepo = $this->createMock(EmployeeRepository::class);
+        $employeeRepo->method('find')->willReturn($employee);
+
+        $entryRepo = $this->createMock(WorkTimeEntryRepository::class);
+        $em = $this->createMock(EntityManagerInterface::class);
+
+        $service = new WorkTimeService($employeeRepo, $entryRepo, $em);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('End time must be after start time.');
+
+        $service->register($dto);
+    }
+
+    public function testThrowsExceptionWhenWorkTimeExceeds12Hours(): void
+    {
+        $dto = new WorkTimeEntryRequest();
+        $dto->employee_uuid = 'uuid-123';
+        $dto->start_time = '2025-04-20 08:00';
+        $dto->end_time = '2025-04-20 21:00';
+
+        $employee = $this->createMock(Employee::class);
+
+        $employeeRepo = $this->createMock(EmployeeRepository::class);
+        $employeeRepo->method('find')->willReturn($employee);
+
+        $entryRepo = $this->createMock(WorkTimeEntryRepository::class);
+        $em = $this->createMock(EntityManagerInterface::class);
+
+        $service = new WorkTimeService($employeeRepo, $entryRepo, $em);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Work time cannot exceed 12 hours.');
+
+        $service->register($dto);
+    }
 }
