@@ -28,4 +28,19 @@ class WorkTimeEntryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function findByEmployeeAndDateRange(
+        Employee $employee,
+        \DateTimeInterface $start,
+        \DateTimeInterface $end
+    ): array {
+        return $this->createQueryBuilder('w')
+            ->andWhere('w.employee = :employee')
+            ->andWhere('w.startDay BETWEEN :start AND :end')
+            ->setParameter('employee', $employee)
+            ->setParameter('start', $start->format('Y-m-d'))
+            ->setParameter('end', $end->format('Y-m-d'))
+            ->getQuery()
+            ->getResult();
+    }
 }
